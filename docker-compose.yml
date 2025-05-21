@@ -1,0 +1,84 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    depends_on:
+      db: 
+        condition: service_healthy
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - internal_network
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./.htpasswd:/etc/nginx/.htpasswd
+    depends_on:
+      - webapp
+      - webadmin
+      - api
+    networks:
+      - internal_network
+    restart: unless-stopped
+  
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+    depends_on:
+      - api
+    networks:
+      - internal_network
+
+  webadmin:
+    build:
+      context: ./webadmin
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+    depends_on:
+      - api
+    networks:
+      - internal_network
+
+  db:
+    image: postgres:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgres/data
+    networks:
+      - internal_network
+    healthcheck:
+      test: sh -c "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+      interval: 10s
+      retries: 5
+
+volumes:
+  pgdata:
+  
+networks:
+  internal_network:
+    driver: bridge

@@ -1,0 +1,35 @@
+# Ignora node_modules - será instalado dentro do container
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Ignora arquivos de testes
+**/__tests__/
+**/*.spec.js
+**/*.test.js
+
+# Ignora arquivos e pastas de configuração de desenvolvimento
+.env
+.env.local
+.env.*.local
+.vscode/
+.idea/
+*.swp
+
+# Ignora arquivos de build locais (se houver)
+dist
+build
+
+# Ignora o Dockerfile e docker-compose se não forem necessários dentro da imagem
+Dockerfile
+docker-compose.yml
+
+# Ignora arquivos do Git
+.git
+.gitignore
+
+# Outros arquivos e pastas comuns
+*.md
+*.log
+*.tsbuildinfo
+coverage
